@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"math/rand"
 	"os"
@@ -14,6 +13,7 @@ const (
 	pivotTypeLast
 	pivotTypeRandom
 	pivotTypeMedianOf3
+	pivotTypeMedianOf9
 )
 
 func loadData(path string) ([]int, error) {
@@ -41,6 +41,23 @@ func loadData(path string) ([]int, error) {
 	return a, nil
 }
 
+//func medianOf3(a []int) int {
+//	n := len(a)
+//	lo, mid, hi := 0, (n-1)/2, n-1
+//
+//	if a[lo] > a[hi] {
+//		a[lo], a[hi] = a[hi], a[lo]
+//	}
+//	if a[lo] > a[mid] {
+//		a[lo], a[mid] = a[mid], a[lo]
+//	}
+//	if a[mid] > a[hi] {
+//		a[mid], a[hi] = a[hi], a[mid]
+//	}
+//
+//	return mid
+//}
+
 func medianOf3(a []int) int {
 	n := len(a)
 	mid := (n - 1) / 2
@@ -55,6 +72,20 @@ func medianOf3(a []int) int {
 	return n - 1
 }
 
+func medianOf9(a []int) int {
+	n := len(a)
+	k := n / 3
+	lo := medianOf3(a[:k])
+	mid := medianOf3(a[k : 2*k])
+	hi := medianOf3(a[2*k:])
+
+	a[0], a[lo] = a[lo], a[0]
+	a[(n+1)/2], a[k+mid] = a[k+mid], a[(n+1)/2]
+	a[2*k+hi], a[n-1] = a[n-1], a[2*k+hi]
+
+	return medianOf3(a)
+}
+
 func choosePivot(a []int, pivotType int) int {
 	n := len(a)
 	switch pivotType {
@@ -64,6 +95,8 @@ func choosePivot(a []int, pivotType int) int {
 		return rand.Intn(n)
 	case pivotTypeMedianOf3:
 		return medianOf3(a)
+	case pivotTypeMedianOf9:
+		return medianOf9(a)
 	default:
 		return 0
 	}
@@ -95,13 +128,7 @@ func QuickSort(a []int, pivotType int) int {
 	}
 
 	pivot := choosePivot(a, pivotType)
-	if pivot >= len(a) {
-		panic(fmt.Sprintf("Invalid pivot index %d for array length %d", pivot, len(a)))
-	}
 	pivot = partition(a, pivot)
-	if pivot >= len(a) {
-		panic(fmt.Sprintf("Invalid pivot index %d for array length %d", pivot, len(a)))
-	}
 
 	totalComps := len(a) - 1
 	if pivot > 0 {
@@ -109,6 +136,38 @@ func QuickSort(a []int, pivotType int) int {
 	}
 	if pivot < len(a)-1 {
 		totalComps += QuickSort(a[pivot+1:], pivotType)
+	}
+
+	return totalComps
+}
+
+func insertionSort(a []int) int {
+	n := len(a)
+	for i := 1; i < n; i++ {
+		for j := i; j > 0; j-- {
+			if a[j-1] > a[j] {
+				a[j-1], a[j] = a[j], a[j-1]
+			}
+		}
+	}
+	return n * (n - 1) / 2
+}
+
+// FastQuickSort ...
+func FastQuickSort(a []int) int {
+	if len(a) <= 10 {
+		return insertionSort(a)
+	}
+
+	pivot := choosePivot(a, pivotTypeMedianOf9)
+	pivot = partition(a, pivot)
+
+	totalComps := len(a) - 1
+	if pivot > 0 {
+		totalComps += FastQuickSort(a[:pivot])
+	}
+	if pivot < len(a)-1 {
+		totalComps += FastQuickSort(a[pivot+1:])
 	}
 
 	return totalComps

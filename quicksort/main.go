@@ -46,4 +46,8 @@ func main() {
 		totalComps += QuickSort(a, pivotTypeRandom)
 	}
 	fmt.Println("Total number of comparisions for pivot random:", totalComps/10)
+
+	a = deepCopy(input)
+	totalComps = FastQuickSort(a)
+	fmt.Println("Total number of comparisions for FastQuickSort:", totalComps)
 }
