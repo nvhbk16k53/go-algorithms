@@ -15,6 +15,15 @@ func deepCopy(a []int) []int {
 	return b
 }
 
+func isSorted(a []int) bool {
+	for i := 0; i < len(a)-1; i++ {
+		if a[i] > a[i+1] {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Printf("Usage: %s <file>\n", os.Args[0])
@@ -30,14 +39,26 @@ func main() {
 	a := deepCopy(input)
 	totalComps := QuickSort(a, pivotTypeFirst)
 	fmt.Println("Total number of comparisions for pivot first:", totalComps)
+	if !isSorted(a) {
+		fmt.Println("The output array is not in sorted order")
+		os.Exit(1)
+	}
 
 	a = deepCopy(input)
 	totalComps = QuickSort(a, pivotTypeLast)
 	fmt.Println("Total number of comparisions for pivot last:", totalComps)
+	if !isSorted(a) {
+		fmt.Println("The output array is not in sorted order")
+		os.Exit(1)
+	}
 
 	a = deepCopy(input)
 	totalComps = QuickSort(a, pivotTypeMedianOf3)
 	fmt.Println("Total number of comparisions for pivot median of 3:", totalComps)
+	if !isSorted(a) {
+		fmt.Println("The output array is not in sorted order")
+		os.Exit(1)
+	}
 
 	rand.Seed(time.Now().UnixNano())
 	totalComps = 0
@@ -46,8 +67,16 @@ func main() {
 		totalComps += QuickSort(a, pivotTypeRandom)
 	}
 	fmt.Println("Total number of comparisions for pivot random:", totalComps/10)
+	if !isSorted(a) {
+		fmt.Println("The output array is not in sorted order")
+		os.Exit(1)
+	}
 
 	a = deepCopy(input)
 	totalComps = FastQuickSort(a)
 	fmt.Println("Total number of comparisions for FastQuickSort:", totalComps)
+	if !isSorted(a) {
+		fmt.Println("The output array is not in sorted order")
+		os.Exit(1)
+	}
 }
