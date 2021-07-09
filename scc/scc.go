@@ -148,18 +148,6 @@ func loadGraph(path string) (*Graph, error) {
 	return g, nil
 }
 
-// ByLabel ...
-type ByLabel []*Vertex
-
-// Len ...
-func (a ByLabel) Len() int { return len(a) }
-
-// Swap ...
-func (a ByLabel) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
-// Less ...
-func (a ByLabel) Less(i, j int) bool { return a[i].Label < a[j].Label }
-
 func pushVertex(s *Stack, v *Vertex) {
 	s.Push(v)
 }
@@ -234,7 +222,10 @@ func Kasaraju(g *Graph) {
 	topoSortRev(g)
 
 	// Sort vertices by topological ordering.
-	sort.Sort(ByLabel(g.Vertices))
+	sortedIds := make([]int, len(g.Vertices))
+	for i, v := range g.Vertices {
+		sortedIds[v.Label-1] = i
+	}
 
 	// Mark all vertices unvisited.
 	for _, v := range g.Vertices {
@@ -243,7 +234,8 @@ func Kasaraju(g *Graph) {
 
 	// Assign SCCs for graph `g`.
 	numSCC := 0
-	for _, v := range g.Vertices {
+	for _, i := range sortedIds {
+		v := g.Vertices[i]
 		if !v.visited {
 			numSCC++
 			dfsSCC(g, v, numSCC)
