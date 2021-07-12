@@ -99,10 +99,7 @@ func loadGraph(path string) (*Graph, error) {
 
 		s = strings.TrimSpace(s)
 		if s != "" {
-		}
-
-		if s != "" {
-			parts := strings.Fields(strings.TrimSpace(s))
+			parts := strings.Fields(s)
 			if len(parts) != 2 {
 				return nil, errors.New("invalid file format")
 			}
