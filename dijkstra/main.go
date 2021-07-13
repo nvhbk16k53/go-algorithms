@@ -11,6 +11,7 @@ import (
 
 var (
 	query = flag.String("query", "", "List of vertices for querying distances")
+	heap  = flag.Bool("heap", false, "Using heap to speed up algorithm")
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	s, err := strconv.Atoi(args[1])
+	sname, err := strconv.Atoi(args[1])
 
 	vertices, err := parseQuery(*query)
 	if err != nil {
@@ -38,17 +39,30 @@ func main() {
 		os.Exit(1)
 	}
 
+	var s *Vertex
+	for _, v := range g.Vertices {
+		if v.Name == sname {
+			s = v
+			break
+		}
+	}
+
 	start := time.Now()
-	dists := Dijkstra(g, NewVertex(s))
+	var dists map[int]int
+	if *heap {
+		dists = FastDijkstra(g, s)
+	} else {
+		dists = Dijkstra(g, s)
+	}
 	elapsed := time.Since(start)
 	if len(vertices) == 0 {
-		fmt.Printf("Shortest path from %d: %v\n", s, dists)
+		fmt.Printf("Shortest path from %v: %v\n", s, dists)
 	} else {
 		ds := make([]int, 0, len(vertices))
 		for _, v := range vertices {
 			ds = append(ds, dists[v])
 		}
-		fmt.Printf("Shortest path from %d to (%s): %v\n", s, *query, ds)
+		fmt.Printf("Shortest path from %v to (%s): %v\n", s, *query, ds)
 	}
 	fmt.Println("Running time:", elapsed)
 }
