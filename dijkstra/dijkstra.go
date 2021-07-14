@@ -141,7 +141,7 @@ func (h *Heap) Delete(pos int) (int, *Vertex) {
 	delete(h.posMap, v.Name)
 
 	parent := (pos - 1) / 2
-	if pos > 0 && pos < n-1 && h.keys[pos] > h.keys[parent] {
+	if pos > 0 && pos < n-1 && h.keys[pos] < h.keys[parent] {
 		h.bubbleUp(pos)
 	} else {
 		h.bubbleDown(pos)
@@ -253,14 +253,39 @@ func loadGraph(path string) (*Graph, error) {
 					g.Vertices = append(g.Vertices, NewVertex(head))
 				}
 
-				e := &Edge{
+				e1 := &Edge{
 					Tail:   g.Vertices[i],
 					Head:   g.Vertices[j],
 					Weight: w,
 				}
-				g.Edges = append(g.Edges, e)
+				exists := false
+				for _, e := range g.Vertices[i].Edges {
+					if e.Head.Name == e1.Head.Name && e.Tail.Name == e1.Tail.Name {
+						exists = true
+						break
+					}
+				}
+				if !exists {
+					g.Edges = append(g.Edges, e1)
+					g.Vertices[i].Edges = append(g.Vertices[i].Edges, e1)
+				}
 
-				g.Vertices[i].Edges = append(g.Vertices[i].Edges, e)
+				e2 := &Edge{
+					Tail:   g.Vertices[j],
+					Head:   g.Vertices[i],
+					Weight: w,
+				}
+				exists = false
+				for _, e := range g.Vertices[j].Edges {
+					if e.Head.Name == e2.Head.Name && e.Tail.Name == e2.Tail.Name {
+						exists = true
+						break
+					}
+				}
+				if !exists {
+					g.Edges = append(g.Edges, e2)
+					g.Vertices[j].Edges = append(g.Vertices[j].Edges, e2)
+				}
 			}
 		}
 
@@ -309,9 +334,9 @@ func FastDijkstra(g *Graph, s *Vertex) map[int]int {
 	h.Insert(0, s)
 
 	for !h.Empty() {
-		k, v := h.ExtractMin()
+		d, v := h.ExtractMin()
 		x[v.Name] = true
-		dists[v.Name] = k
+		dists[v.Name] = d
 
 		for _, e := range v.Edges {
 			if x[e.Head.Name] {
@@ -320,11 +345,11 @@ func FastDijkstra(g *Graph, s *Vertex) map[int]int {
 
 			pos, ok := h.posMap[e.Head.Name]
 			if !ok {
-				h.Insert(k+e.Weight, e.Head)
+				h.Insert(d+e.Weight, e.Head)
 			} else {
 				his, _ := h.Delete(pos)
-				if k+e.Weight < his {
-					his = k + e.Weight
+				if d+e.Weight < his {
+					his = d + e.Weight
 				}
 				h.Insert(his, e.Head)
 			}
